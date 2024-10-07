@@ -1,6 +1,6 @@
 const passport = require("passport")
-const User = require('../../domain/models/userModel');
-const { name } = require("../../infrastructure/middlewares/sessionManager");
+const UsersModel = require('../../domain/models/usersModel');
+const MovementsModel = require('../../domain/models/movementsModel');
 
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const DiscordStrategy = require('passport-discord').Strategy;
@@ -18,6 +18,7 @@ function serializeAndDeserializeUser(){
         }
     });
 }
+
 function configPassportGoogleOAuth() {
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
@@ -27,27 +28,29 @@ function configPassportGoogleOAuth() {
 
     }, async (accessToken, refreshToken, profile, done) => {
         try {
-            let userInstance = new User();
+            let usersInstance = new UsersModel();
+            let movementsModel = new MovementsModel();
             let dataUser = [{
                 $match: {
                     email: profile._json.email
                 }
             }];
-            let resAgregate = await userInstance.aggregate(dataUser)
+            let resAgregate = await usersInstance.aggregate(dataUser)
             let [user] = resAgregate
 
             if (resAgregate.length) return done(null, user);
 
-            let data = {
+            let userData = {
                 name: profile.displayName,
                 username: profile._json.email.match(/^[^@]+/)[0],
                 img: profile._json.picture,
                 email: profile._json.email,
                 provider: 'google',
-                passport: null
+                balance: 0,
             }
-            await userInstance.insert(data)
-            let userCreate = await userInstance.aggregate(dataUser)
+            await usersInstance.insert(userData)
+            let userCreate = await usersInstance.aggregate(dataUser)
+
             done(null, userCreate);
         } catch (error) {
             console.error('Error saving/updating user:', error);
@@ -64,27 +67,27 @@ function configPassportDiscordOAuth() {
         scope: ['identify', 'email']
     }, async (accessToken, refreshToken, profile, done) =>  {
         try {
-            let userInstance = new User();
+            let usersInstance = new UsersModel();
             let dataUser = [{
                 $match: {
                     email: profile.email
                 }
             }];
-            let resAgregate = await userInstance.aggregate(dataUser)
+            let resAgregate = await usersInstance.aggregate(dataUser)
             let [user] = resAgregate
 
             if (resAgregate.length) return done(null, user);
 
-            let data = {
+            let userData = {
                 name: profile.global_name,
                 username: profile.username,
                 img: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : '',
                 email: profile.email,
                 provider: 'discord',
-                passport: null
+                balance: 0,
             }
-            await userInstance.insert(data)
-            let userCreate = await userInstance.aggregate(dataUser)
+            await usersInstance.insert(userData)
+            let userCreate = await usersInstance.aggregate(dataUser)
             done(null, userCreate);
         } catch (error) {
             console.error('Error saving/updating user:', error);

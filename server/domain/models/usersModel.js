@@ -1,7 +1,7 @@
 const { ObjectId } = require("mongodb");
 const ConnectToDatabase = require("../../infrastructure/database/mongoDB");
 
-class User{
+class UsersModel{
     async findById (id) {
         let obj = ConnectToDatabase.instanceConnect;
         const collection = obj.db.collection('users');
@@ -24,4 +24,4 @@ class User{
     }   
 }
 
-module.exports = User;
+module.exports = UsersModel;
