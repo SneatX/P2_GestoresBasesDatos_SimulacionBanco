@@ -10,6 +10,7 @@ const sessionManager = require('../middlewares/sessionManager')
 const createServer = () => {
     //Creacion del servidor con express
     const app = express()
+    app.use(express.json());
 
     //Conficuracion del cors para permitir el acceso desde otros dominios como el del cliente
     const corsOptions = {

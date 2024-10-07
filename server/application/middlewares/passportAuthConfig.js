@@ -50,7 +50,6 @@ function configPassportGoogleOAuth() {
             }
             await usersInstance.insert(userData)
             let userCreate = await usersInstance.aggregate(dataUser)
-
             done(null, userCreate);
         } catch (error) {
             console.error('Error saving/updating user:', error);
