@@ -9,6 +9,13 @@ class MovementsModel {
         return res;
     }
 
+    async getMovements(id) {
+        let obj = ConnectToDatabase.instanceConnect;
+        const collection = obj.db.collection('movements');
+        const res = await collection.find({userId: new ObjectId(id)}).sort({ date: -1 }).toArray();
+        return res;
+    }
+
     async newTransaction(newMovement) {
         let obj = ConnectToDatabase.instanceConnect;
 
